@@ -218,7 +218,14 @@ module Debugger
 
       3.times do |i|
         begin
-          s = TCPSocket.open(acceptor_host, acceptor_port)
+          # Try to connect using the host IP address.  If that fails
+          # then assume we are on a Mac and try the internal DNS.
+          begin
+            s = TCPSocket.open(acceptor_host, acceptor_port)
+          rescue
+            # Assume we are on a Mac and try the internal host DNS.
+            s = TCPSocket.open('host.docker.internal', acceptor_port)
+          end
           dispatcher_answer = s.gets.chomp
 
           if dispatcher_answer == "true"
